@@ -8,9 +8,10 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-payment/.settings/*
-payment/.classpath
-payment/.project
+.settings
+.settings/*
+.classpath
+.project
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
