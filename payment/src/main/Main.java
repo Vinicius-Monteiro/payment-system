@@ -3,7 +3,7 @@ import java.util.Scanner;
 
 public class Main {
 	
-	public static void buildCalendar(int [][]calendar, String firstDay) {
+	public static boolean buildCalendar(int [][]calendar, String firstDay) {
 		int day = 0;
 		switch(firstDay) {
 			case "domingo":
@@ -26,8 +26,9 @@ public class Main {
 				break;
 			case "sabado":
 				day = 7;
-				break;	
+				break;
 		}
+		if(day == 0) return false;
 		for(int i = 0; i < 13; i++) {//meses
 			for(int j = 0; j < 32; j++) {//dias
 				calendar[i][j] = day;
@@ -39,6 +40,7 @@ public class Main {
 				else if(++day == 8) day = 1;
 			}
 		}
+		return true;
 	}
 
 	public static void add(String []attributes, int index, String [][]employees) {
@@ -121,15 +123,29 @@ public class Main {
 		else return ((minutes - (60 * 8)) * (1.5 * perMinute)) + ((60 * 8) * perMinute);
 	}
 
+	public static String cutString(String str, int nthString) {
+		int i;
+		for(i = 0; i < str.length(); i++) {
+			if(str.charAt(i) == ' ') break;
+		}
+		return (nthString == 1) ? str.substring(0, i): str.substring(i + 1);
+	}
+
+	public static double commissionPayment(double commission, double price) {
+		return (commission * price)/100;
+	}
+
 	public static void main(String[] args) {
 		Scanner in = new Scanner(System.in);
 		System.out.print("Especifique o primeiro dia do ano (e.g. segunda, terca...)\n:");
 		//calendário 12x31 com uma linha/coluna a mais para indexar mais facil
 		int [][]calendar = new int[13][32];
 		String firstDay = in.nextLine();
-		buildCalendar(calendar, firstDay);
-
-		System.out.println("Calendário criado.\n");
+		if(!buildCalendar(calendar, firstDay)){
+			System.out.println("Dia invalido.");
+			return;
+		}
+		else System.out.println("Calendário criado.\n");
 
 		String usage = "\t1- Adiçao de um empregado\n"
 						+"\t2- Remoçao de um empregado\n"
@@ -147,8 +163,9 @@ public class Main {
 						+"\t[1,10]- Comandos\n"
 						+"\tq- Terminar programa\n");
 		
-		int size = 4, employeeCount = 0, globalId = 1;
+		int size = 4, employeeCount = 0, globalId = 1, index;
 		String [][]employees = new String[size][6];
+		String id;
 		while(true) {
 			System.out.print(":");
 			String command = in.nextLine();
@@ -171,9 +188,16 @@ public class Main {
 					System.out.print("\tAtributo associado: ");
 					attributes[3] = in.nextLine();
 					attributes[4] = Integer.toString(globalId);
-					attributes[5] = "0";
-					if(attributes[2] == "salaried" || attributes[2] == "commissioned") {
-						attributes[5] = attributes[3];
+					switch(attributes[2]) {
+						case "salaried":
+							attributes[5] = attributes[3];
+							break;
+						case "commissioned":
+							attributes[5] = cutString(attributes[3], 1);
+							break;
+						case "hourly":
+							attributes[5] = "0";
+							break;
 					}
 
 					if(employeeCount == size) {
@@ -195,7 +219,7 @@ public class Main {
 				case '3':
 					System.out.println("Forneça as seguintes informações");
 					System.out.print("\tID do funcionário: ");
-					String id = in.next();//MUDAR PARA INT POIS FIZ PARSEINT JA NO FINDINDEX
+					id = in.next();//MUDAR PARA INT POIS FIZ PARSEINT JA NO FINDINDEX
 					System.out.print("\tHorario de entrada (hora min): ");
 					int arrivalH = in.nextInt();
 					int arrivalM = in.nextInt();
@@ -205,13 +229,24 @@ public class Main {
 					int worked = timeToMinutes(arrivalH, arrivalM, exitH, exitM);
 					System.out.println("Id = " + id +  ", chegada = " + arrivalH + ":" + arrivalM + " saida = " + exitH + ":" + exitM);
 					System.out.println("Tempo no trabalho = " + worked);
-					int index = findIndex(size, id, employees);
+					index = findIndex(size, id, employees);
 					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) + 
 									relativePay(Double.parseDouble(employees[index][3]), worked));
 					id = in.nextLine();
 					break;
+				case '4':
+					System.out.println("Forneça as seguintes informações");
+					System.out.print("\tID do funcionário: ");
+					id = in.next();
+					System.out.print("\tPreço da venda: ");
+					double price = in.nextDouble();
+					index = findIndex(size, id, employees);
+					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) + 
+									commissionPayment(Double.parseDouble(cutString(employees[index][3], 2)), price));
+					id = in.nextLine();
+					break;
 			}
-			//printAll(size, employees);
+			printAll(size, employees);
 		}
 	}
 }
