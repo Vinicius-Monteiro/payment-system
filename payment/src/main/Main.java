@@ -45,11 +45,15 @@ public class Main {
 
 	public static void add(String []attributes, int index, String [][]employees) {
 		
-		for(int i = 0; i < 6; i++) {
+		for(int i = 0; i < 9; i++) {
 			employees[index][i] = attributes[i];
 		}
 		System.out.println("Added employee's ID: " + employees[index][4]);
 		return;
+	}
+
+	public static void nextPayment(String []employee, String [][]calendar) {
+		
 	}
 
 	public static int findIndex(int size, String rmId, String [][]employees) {
@@ -73,7 +77,7 @@ public class Main {
 			System.out.println("Employee not found");
 		else {
 			while(employees[index + 1][0] != null) {
-				for(int i = 0; i < 6; i++) {
+				for(int i = 0; i < 9; i++) {
 					employees[index][i] = employees[index + 1][i];
 					employees[index + 1][i] = null;
 				}
@@ -89,6 +93,9 @@ public class Main {
 		System.out.println("Attribute: " + employees[index][3]);
 		System.out.println("Id: " + employees[index][4]);
 		System.out.println("To be payed: " + employees[index][5]);
+		System.out.println("Payment day: " + employees[index][6]);
+		System.out.println("Payment method: " + employees[index][7]);
+		System.out.println("Union's information: " + employees[index][8]);
 		return;
 	}
 
@@ -168,26 +175,26 @@ public class Main {
 						//comissionados tem salario mensal e comissao (separados por espaco)
 		//employees[4] = ID
 		//employees[5] = valor do proximo contracheque
-		//employees[6] = metodo de pagamento:
+		//employees[6] = data do prox pagamento
+		//employees[7] = metodo de pagamento:
 						//1: cheque correios, cheque maos, deposito conta
-		//employees[7] = pertence ao sindicato (1 ou 0)
-		//employees[8] = identificacao no sindicato
-		//employees[9] = taxa sindical
+		//employees[8] = pertence ao sindicato (1 ou 0), identificacao no sindicato, taxa sindical
+		
 		int size = 4, employeeCount = 0, globalId = 1, index;
-		String [][]employees = new String[size][6];
+		String [][]employees = new String[size][9];
 		String id;
 		while(true) {
 			System.out.print(":");
 			String command = in.nextLine();
 
-			switch(command.charAt(0)) {
-				case 'q':
-					return;
-				case 'l':
-					System.out.print(usage);
+			switch(command.charAt(0)) {		//
+				case 'q':					//
+					return;					//FAZER A NEXTPAYMENT
+				case 'l':					//
+					System.out.print(usage);//
 					break;
 				case '1':
-					String []attributes = new String[6];
+					String []attributes = new String[9];
 					System.out.println("Forneca as seguintes informacoes:");
 					System.out.print("\tNome: ");
 					attributes[0] = in.nextLine();
@@ -202,7 +209,7 @@ public class Main {
 							attributes[5] = attributes[3];
 							break;
 						case "commissioned":
-						System.out.print("\tSalario e % de comissao (e.g. 1400 10): ");
+						System.out.print("\tSalario e % de comissao: ");
 							attributes[3] = in.nextLine();
 							//splitting by whitespaces and getting 
 							//the first returned substring
@@ -216,6 +223,11 @@ public class Main {
 					}
 					attributes[4] = Integer.toString(globalId);
 						
+					System.out.print("\tMetodo de pagamento: ");
+					attributes[7] = in.nextLine();
+					System.out.print("\tInformacoes sindicais: ");
+					attributes[8] = in.nextLine();
+
 					if(employeeCount == size) {
 						employees = growMatrix(employees);
 						size = employees.length;
