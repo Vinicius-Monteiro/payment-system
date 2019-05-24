@@ -53,10 +53,16 @@ public class Main {
 	}
 
 	public static int findIndex(int size, String rmId, String [][]employees) {
-		for(int i = 0; i < size; i++) {
+		for(int i = 0; i < size; i++)
 			if(employees[i][0] != null && 
 			Integer.parseInt(employees[i][4]) == Integer.parseInt(rmId)) return i;
-		}
+		System.out.println("employee not found");
+		return -1;//employee not found
+	}	
+	
+	public static int findName(int size, String name, String [][]employees) {
+		for(int i = 0; i < size; i++)
+			if(employees[i][0] != null && employees[i][0] == name) return i;
 		System.out.println("employee not found");
 		return -1;//employee not found
 	}	
@@ -123,14 +129,6 @@ public class Main {
 		else return ((minutes - (60 * 8)) * (1.5 * perMinute)) + ((60 * 8) * perMinute);
 	}
 
-	public static String cutString(String str, int nthString) {
-		int i;
-		for(i = 0; i < str.length(); i++) {
-			if(str.charAt(i) == ' ') break;
-		}
-		return (nthString == 1) ? str.substring(0, i): str.substring(i + 1);
-	}
-
 	public static double commissionPayment(double commission, double price) {
 		return (commission * price)/100;
 	}
@@ -138,31 +136,43 @@ public class Main {
 	public static void main(String[] args) {
 		Scanner in = new Scanner(System.in);
 		System.out.print("Especifique o primeiro dia do ano (e.g. segunda, terca...)\n:");
-		//calendário 12x31 com uma linha/coluna a mais para indexar mais facil
+		//calendario 12x31 com uma linha/coluna a mais para indexar mais facil
 		int [][]calendar = new int[13][32];
 		String firstDay = in.nextLine();
 		if(!buildCalendar(calendar, firstDay)){
 			System.out.println("Dia invalido.");
 			return;
 		}
-		else System.out.println("Calendário criado.\n");
+		else System.out.println("Calendario criado.\n");
 
-		String usage = "\t1- Adiçao de um empregado\n"
-						+"\t2- Remoçao de um empregado\n"
-						+"\t3- Lançar um cartao de ponto\n"
-						+"\t4- Lançar um resultado de venda\n"
-						+"\t5- Lançar uma taxa de serviço\n"
+		String usage = "\t1- Adicao de um empregado\n"
+						+"\t2- Remocao de um empregado\n"
+						+"\t3- Lancar um cartao de ponto\n"
+						+"\t4- Lancar um resultado de venda\n"
+						+"\t5- Lancar uma taxa de servico\n"
 						+"\t6- Alterar detalhes de um empregado\n"
 						+"\t7- Rodar a folha de pagamento para hoje\n"
 						+"\t8- Undo/redo\n"
 						+"\t9- Agenda de pagamento\n"
-						+"\t10- Criação de novas agendas de pagamento\n";
+						+"\t10- Criacao de novas agendas de pagamento\n";
 
-		System.out.print("Açoes do programa:\n"
+		System.out.print("Acoes do programa:\n"
 						+"\tl- Listar comandos do sistema\n"
 						+"\t[1,10]- Comandos\n"
 						+"\tq- Terminar programa\n");
-		
+		//employees[0] = nome
+		//employees[1] = endereco
+		//employees[2] = contrato
+		//employees[3] = atributos associados ao contrato:
+						//salario mensal; comissao por venda; salario por hora
+						//comissionados tem salario mensal e comissao (separados por espaco)
+		//employees[4] = ID
+		//employees[5] = valor do proximo contracheque
+		//employees[6] = metodo de pagamento:
+						//1: cheque correios, cheque maos, deposito conta
+		//employees[7] = pertence ao sindicato (1 ou 0)
+		//employees[8] = identificacao no sindicato
+		//employees[9] = taxa sindical
 		int size = 4, employeeCount = 0, globalId = 1, index;
 		String [][]employees = new String[size][6];
 		String id;
@@ -178,28 +188,34 @@ public class Main {
 					break;
 				case '1':
 					String []attributes = new String[6];
-					System.out.println("Forneça as seguintes informações:");
+					System.out.println("Forneca as seguintes informacoes:");
 					System.out.print("\tNome: ");
 					attributes[0] = in.nextLine();
-					System.out.print("\tEndereço: ");
+					System.out.print("\tEndereco: ");
 					attributes[1] = in.nextLine();
 					System.out.print("\tContrato: ");
 					attributes[2] = in.nextLine();
-					System.out.print("\tAtributo associado: ");
-					attributes[3] = in.nextLine();
-					attributes[4] = Integer.toString(globalId);
 					switch(attributes[2]) {
 						case "salaried":
+							System.out.print("\tSalario mensal: ");
+							attributes[3] = in.nextLine();
 							attributes[5] = attributes[3];
 							break;
 						case "commissioned":
-							attributes[5] = cutString(attributes[3], 1);
+						System.out.print("\tSalario e % de comissao (e.g. 1400 10): ");
+							attributes[3] = in.nextLine();
+							//splitting by whitespaces and getting 
+							//the first returned substring
+							attributes[5] = attributes[3].split(" ")[0];
 							break;
 						case "hourly":
+							System.out.print("\tSalario por hora: ");
+							attributes[3] = in.nextLine();
 							attributes[5] = "0";
 							break;
 					}
-
+					attributes[4] = Integer.toString(globalId);
+						
 					if(employeeCount == size) {
 						employees = growMatrix(employees);
 						size = employees.length;
@@ -210,16 +226,16 @@ public class Main {
 					globalId++;
 					break;
 				case '2':
-					System.out.print("Forneça o id do funcionario que deseja remover\n"
+					System.out.print("Forneca o id do funcionario que deseja remover\n"
 									+"\t:");
 					String rmId = in.nextLine();
 					remove(size, rmId, employees);
 					employeeCount--;
 					break;
 				case '3':
-					System.out.println("Forneça as seguintes informações");
-					System.out.print("\tID do funcionário: ");
-					id = in.next();//MUDAR PARA INT POIS FIZ PARSEINT JA NO FINDINDEX
+					System.out.println("Forneca as seguintes informacoes");
+					System.out.print("\tID do funcionario: ");
+					id = in.nextLine();
 					System.out.print("\tHorario de entrada (hora min): ");
 					int arrivalH = in.nextInt();
 					int arrivalM = in.nextInt();
@@ -227,22 +243,32 @@ public class Main {
 					int exitH = in.nextInt();
 					int exitM = in.nextInt();
 					int worked = timeToMinutes(arrivalH, arrivalM, exitH, exitM);
-					System.out.println("Id = " + id +  ", chegada = " + arrivalH + ":" + arrivalM + " saida = " + exitH + ":" + exitM);
-					System.out.println("Tempo no trabalho = " + worked);
 					index = findIndex(size, id, employees);
 					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) + 
 									relativePay(Double.parseDouble(employees[index][3]), worked));
 					id = in.nextLine();
 					break;
 				case '4':
-					System.out.println("Forneça as seguintes informações");
-					System.out.print("\tID do funcionário: ");
-					id = in.next();
-					System.out.print("\tPreço da venda: ");
+					System.out.println("Forneca as seguintes informacoes");
+					System.out.print("\tID do funcionario: ");
+					id = in.nextLine();
+					System.out.print("\tPreco da venda: ");
 					double price = in.nextDouble();
 					index = findIndex(size, id, employees);
 					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) + 
-									commissionPayment(Double.parseDouble(cutString(employees[index][3], 2)), price));
+									commissionPayment(Double.parseDouble(
+									employees[index][3].split(" ")[1]), price));
+
+					id = in.nextLine();
+					break;
+				case '5': 
+					System.out.println("Forneca as seguintes informacoes");
+					System.out.print("\tNome do funcionario: ");
+					String name = in.nextLine();
+					System.out.print("\tTaxa de servico: ");
+					double fee = in.nextDouble();
+					index = findName(size, name, employees);
+					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) - fee);
 					id = in.nextLine();
 					break;
 			}
