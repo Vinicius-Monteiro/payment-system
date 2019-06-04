@@ -146,7 +146,7 @@ public class Main {
 		System.out.println("Contract: " + employees[index][2]);
 		System.out.println("Attribute: " + employees[index][3]);
 		System.out.println("Id: " + employees[index][4]);
-		System.out.println("To be payed: " + employees[index][5]);
+		System.out.println("To be payed: " + getPayment(employees[index]));
 		System.out.println("Payment schedule: " + employees[index][6]);
 		System.out.println("Payment day: " + employees[index][7]);
 		System.out.println("Payment method: " + employees[index][8]);
@@ -156,8 +156,10 @@ public class Main {
 
 	public static void printAll(int size, String [][]employees) {
 		for(int i = 0; i < size; i++) {
-			System.out.println("||||||||||||||");
-			getAt(i, employees);
+			if(employees[i][0] != null) {
+				System.out.println("||||||||||||||");
+				getAt(i, employees);
+			}
 		}
 		return;
 	}
@@ -199,6 +201,33 @@ public class Main {
 		return Double.toString(pay - ((pay * fee)/100.0));
 	}
 	
+	public static void initialPay(String []employee) {
+		if(employee[2].equals("salaried"))
+			employee[5] = employee[3];
+		else if(employee[2].equals("commissioned") || employee[2].equals("hourly"))
+			employee[5] = "0";
+		return;
+	}
+
+	public static double getPayment(String []employee) {
+		if(employee[6].split(" ")[0].equals("mensal")){
+			if(employee[2].equals("commissioned"))
+				return Double.parseDouble(employee[5]) + Double.parseDouble(employee[3].split(" ")[0]);
+			else
+				return Double.parseDouble(employee[5]);
+		}
+		else {
+			double parcelas = Double.parseDouble(employee[6].split(" ")[1]);
+			if(parcelas == 1) parcelas = 4;
+			if(employee[2].equals("salaried"))
+				return Double.parseDouble(employee[5])/parcelas;
+			else if(employee[2].equals("commissioned")){
+				double salary = Double.parseDouble(employee[3].split(" ")[0]);
+				return (salary/parcelas) + Double.parseDouble(employee[5]);
+			} else
+				return Double.parseDouble(employee[5]);
+		}
+	}
 
 	public static void main(String[] args) {
 		Scanner in = new Scanner(System.in);
@@ -287,36 +316,32 @@ public class Main {
 						case "salaried":
 							System.out.print("\tSalario mensal: ");
 							attributes[3] = in.nextLine();
-							attributes[5] = attributes[3];
 							attributes[6] = schedules[0];//agenda de mensal $
 							break;
 						case "commissioned":
 							System.out.print("\tSalario e % de comissao: ");
 							attributes[3] = in.nextLine();
-							//splitting by whitespaces and getting 
-							//the first returned substring
-							attributes[5] = attributes[3].split(" ")[0];
 							attributes[6] = schedules[2];//agenda de semanal 2 sexta
 							break;
 						case "hourly":
 							System.out.print("\tSalario por hora: ");
 							attributes[3] = in.nextLine();
-							attributes[5] = "0";
 							attributes[6] = schedules[1];//agenda de semanal 1 sexta
 							break;
 					}
 					attributes[4] = Integer.toString(globalId);
-						
+					
 					System.out.print("\tMetodo de pagamento: ");
 					attributes[8] = in.nextLine();
 					System.out.print("\tInformacoes sindicais: ");
 					attributes[9] = in.nextLine();
-
+					
 					if(employeeCount == size) {
 						employees = growMatrix(employees);
 						size = employees.length;
 					}
 					
+					initialPay(attributes);
 					nextPayment(attributes, calendar, currentDay, currentMonth);
 					add(attributes, employeeCount, employees);
 					employeeCount++;
@@ -362,9 +387,9 @@ public class Main {
 					System.out.println("Forneca as seguintes informacoes");
 					System.out.print("\tID do funcionario no sindicato: ");
 					id = in.nextLine();
-					System.out.print("\tTaxa de servico: ");//MUDAR O INDEX PARA O ID DO SINDICATO
+					System.out.print("\tTaxa de servico: ");
 					double fee = in.nextDouble();
-					index = findName(size, id, employees);
+					index = findUnion(size, id, employees);
 					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) - fee);
 					id = in.nextLine();
 					break;
@@ -405,9 +430,10 @@ public class Main {
 							employees[index][6] = schedules[2];
 							System.out.print("\tSalario e % de comissao: ");
 						}
-						nextPayment(employees[index], calendar, currentDay, currentMonth);
 						String attribute = in.nextLine();
 						employees[index][3] = attribute;
+						nextPayment(employees[index], calendar, currentDay, currentMonth);
+						initialPay(employees[index]);
 					}
 					System.out.print("\tSeu metodo de pagamento ?(y/n):");
 					answer = in.nextLine();
@@ -440,21 +466,21 @@ public class Main {
 					}
 					for(int i = 0; i < employeeCount; i++) {
 						date = employees[i][7];
-						System.out.println("date is " + date);
+						System.out.println("date is " + date);//para debugar
 						if(Integer.parseInt(date.split("/")[0]) == currentDay
 						&& Integer.parseInt(date.split("/")[1]) == currentMonth) {
 							System.out.println("\t//////////////////////");
 							System.out.println("\tEmpregado " + employees[i][0] 
 							+ " com ID " + employees[i][4] + " recebera hoje");
 							if(employees[i][9].split(" ")[0].equals("1")){
-								System.out.println("\tValor a receber antes das deducoes: $" + employees[i][5]);
+								System.out.println("\tValor a receber antes das deducoes: $" + getPayment(employees[i]));
 								System.out.println("\tDeducoes sindicais: " + employees[i][9].split(" ")[2] + "%");
-								employees[i][5] = afterDedution(Double.parseDouble(employees[i][5]),
-								Double.parseDouble(employees[i][9].split(" ")[2]));
-							}
-							System.out.println("\tValor a receber: " + employees[i][5]);
+								System.out.println("\tValor a receber: $" + afterDedution(getPayment(employees[i])
+								, Double.parseDouble(employees[i][9].split(" ")[2])));
+							} else
+								System.out.println("\tValor a receber: $" + getPayment(employees[i]));
 							System.out.println("\tMétodo de pagamento: " + employees[i][8]);
-							employees[i][5] = "0";//MEXER COM A AGENDA DE PAGAMENTO PARA CALCULAR TUDOOOOOO
+							initialPay(employees[i]);
 							nextPayment(employees[i], calendar, nextDay, nextMonth);
 							System.out.println("\tEmpregado pago.");
 							System.out.println("\t//////////////////////");
