@@ -66,7 +66,8 @@ public class Main {
 		if(calendar[currentMonth][currentDay] == -1) i++;
 		for(i = currentMonth; i < 13; i++) {
 			for(j = 31; j >= 1; j--) {
-				if(calendar[i][j] != -1) return Integer.toString(j) + '/' + Integer.toString(i);
+				if(calendar[i][j] != -1 && calendar[i][j] != 7 && calendar[i][j] != 1)
+					return Integer.toString(j) + '/' + Integer.toString(i);
 			}
 		}
 		return Integer.toString(j) + '/' + Integer.toString(i);
@@ -100,18 +101,26 @@ public class Main {
 			employee[7] = nxt;
 		}
 	}
+
+	public static int findUnion(int size, String rmId, String [][]employees) {
+		for(int i = 0; i < size; i++)
+			if(employees[i][0] != null && employees[i][9].split(" ")[1].equals(rmId))
+				return i;
+		System.out.println("employee not found");
+		return -1;//employee not found
+	}
 		
 	public static int findIndex(int size, String rmId, String [][]employees) {
 		for(int i = 0; i < size; i++)
-			if(employees[i][0] != null && 
-			Integer.parseInt(employees[i][4]) == Integer.parseInt(rmId)) return i;
+			if(employees[i][0] != null && employees[i][4].equals(rmId))
+				return i;
 		System.out.println("employee not found");
 		return -1;//employee not found
 	}	
 	
 	public static int findName(int size, String name, String [][]employees) {
 		for(int i = 0; i < size; i++)
-			if(employees[i][0] != null && employees[i][0] == name) return i;
+			if(employees[i][0] != null && employees[i][0].equals(name)) return i;
 		System.out.println("employee not found");
 		return -1;//employee not found
 	}	
@@ -169,7 +178,7 @@ public class Main {
 	public static String[][] growMatrix(String [][]employees) {
 		//returns a matrix 50% larger than the previous, with the same content
 		int newSize = (int)(employees.length * 1.5) + 1;
-		String [][]newMatrix = new String[newSize][6];
+		String [][]newMatrix = new String[newSize][10];
 		System.arraycopy(employees, 0, newMatrix, 0, employees.length);
 		return newMatrix;
 	}
@@ -251,6 +260,12 @@ public class Main {
 			String command = in.nextLine();
 
 			switch(command) {
+				case "schedules": 
+					for(int i = 0; i < 20; i++) {
+						if(schedules[i] != null)
+							System.out.println("\t" + (i + 1) + "-" + schedules[i]);
+					}
+					break;
 				case "q"://mudar para exit dps de terminar
 					return;
 				case "manual":
@@ -310,8 +325,8 @@ public class Main {
 				case "2":
 					System.out.print("Forneca o id do funcionario que deseja remover\n"
 									+"\t:");
-					String rmId = in.nextLine();
-					remove(size, rmId, employees);
+					id = in.nextLine();
+					remove(size, id, employees);
 					employeeCount--;
 					break;
 				case "3":
@@ -345,11 +360,11 @@ public class Main {
 					break;
 				case "5": 
 					System.out.println("Forneca as seguintes informacoes");
-					System.out.print("\tNome do funcionario: ");
-					String name = in.nextLine();
-					System.out.print("\tTaxa de servico: ");
+					System.out.print("\tID do funcionario no sindicato: ");
+					id = in.nextLine();
+					System.out.print("\tTaxa de servico: ");//MUDAR O INDEX PARA O ID DO SINDICATO
 					double fee = in.nextDouble();
-					index = findName(size, name, employees);
+					index = findName(size, id, employees);
 					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) - fee);
 					id = in.nextLine();
 					break;
@@ -362,7 +377,7 @@ public class Main {
 					String answer = in.nextLine();
 					if(answer.equals("y")){
 						System.out.print("\tNome:");
-						name = in.nextLine();
+						String name = in.nextLine();
 						employees[index][0] = name;
 					}
 					System.out.print("\tSeu endereco ?(y/n):");
@@ -410,8 +425,8 @@ public class Main {
 					}
 					break;
 				case "7":
-					System.out.println("Rodando a folha de pagamento..");
-					int aux = currentDay + 1, nextDay = currentDay + 1, nextMonth = currentMonth;
+					System.out.println("Rodando a folha de pagamento para o dia " + currentDay + "/" + currentMonth);
+					int aux = currentDay + 1, nextDay = 0, nextMonth = currentMonth;
 					for(int i = currentMonth; i < 13; i++){
 						if(i != currentMonth) aux = 1;
 						for(int j = aux; j < 32; j++){
@@ -421,7 +436,7 @@ public class Main {
 								break;
 							}
 						}
-						if(nextDay != currentDay + 1) break;
+						if(nextDay != 0) break;
 					}
 					for(int i = 0; i < employeeCount; i++) {
 						date = employees[i][7];
@@ -433,22 +448,52 @@ public class Main {
 							+ " com ID " + employees[i][4] + " recebera hoje");
 							if(employees[i][9].split(" ")[0].equals("1")){
 								System.out.println("\tValor a receber antes das deducoes: $" + employees[i][5]);
-								System.out.println("\tDeducoes sindicais: " + employees[i][9].split(" ")[2]);
+								System.out.println("\tDeducoes sindicais: " + employees[i][9].split(" ")[2] + "%");
 								employees[i][5] = afterDedution(Double.parseDouble(employees[i][5]),
-								Double.parseDouble(employees[i][9].split(" ")[0]));
+								Double.parseDouble(employees[i][9].split(" ")[2]));
 							}
 							System.out.println("\tValor a receber: " + employees[i][5]);
 							System.out.println("\tMétodo de pagamento: " + employees[i][8]);
-							employees[i][5] = "0";
+							employees[i][5] = "0";//MEXER COM A AGENDA DE PAGAMENTO PARA CALCULAR TUDOOOOOO
 							nextPayment(employees[i], calendar, nextDay, nextMonth);
 							System.out.println("\tEmpregado pago.");
-							System.out.println("\t\\\\\\\\\\\\\\\\\\\\\\\\");
+							System.out.println("\t//////////////////////");
+							//salariado mensal recebe normal, semanal divide pela qtd de semanas
+							//comissionado mensal recebe normal, semanal divide o salario pelas semanas e da a comissao total
+							//horista recebe todo de qualquer forma
 						}
 					}
 					System.out.println("Todos os empregados foram pagos.");
 					System.out.println("O dia de hoje agora é " + nextDay + "/" + nextMonth);
 					currentDay = nextDay;
 					currentMonth = nextMonth;
+					break;
+				case "9":
+					System.out.print("Forneca o ID do empregado: ");
+					id = in.nextLine();
+					System.out.println("Escolha uma das agendas disponiveis:");
+					for(int i = 0; i < 20; i++) {
+						if(schedules[i] != null)
+							System.out.println("\t" + (i + 1) + "-" + schedules[i]);
+					}
+					System.out.print("Nova agenda de pagamento desse empregado: ");
+					String sch = in.nextLine();
+					index = findIndex(size, id, employees);
+					employees[index][6] = schedules[Integer.parseInt(sch) - 1];
+					nextPayment(employees[index], calendar, currentDay, currentMonth);
+					break;
+				case "10":
+					if(schedules[19] != null){
+						System.out.println("Nao foi possivel criar uma nova agenda");
+						break;
+					}
+					System.out.print("Nova agenda de pagamento: ");
+					for(int i = 0; i < 20; i++) {
+						if(schedules[i] == null){
+							schedules[i] = in.nextLine();
+							break;
+						}
+					}
 					break;
 			}
 		}
