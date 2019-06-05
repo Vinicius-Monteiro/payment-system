@@ -266,11 +266,13 @@ public class Main {
 						+"\t9- Agenda de pagamento\n"
 						+"\t10- Criacao de novas agendas de pagamento\n";
 
-		System.out.print("Acoes do programa:\n"
+		System.out.print("Comandos do programa:\n"
+						+"\t[1,10]- Funcionalidades\n"
 						+"\texit- Terminar programa\n"
-						+"\tprint- Listar empregados no sistema\n"
-						+"\tmanual- Listar comandos do sistema\n"
-						+"\t[1,10]- Comandos\n");
+						+"\tmanual- Listar funcionalidades do sistema\n"
+						+"\tdate- Mostrar a data atual do sistema\n"
+						+"\tschedules - Agendas de pagamento cadastradas no sistema\n"
+						+"\tprint- Listar empregados no sistema\n");
 		
 		//employees[0] = nome
 		//employees[1] = endereco
@@ -295,10 +297,6 @@ public class Main {
 		schedules[1] = "semanal 1 sexta";
 		schedules[2] = "semanal 2 sexta";
 		
-		//int []undoDay = new int[10];
-		//int []undoMonth = new int[10];
-		//int []undoECount = new int[10];
-		//int []undoGID = new int[10];
 		int [][]undoInts = new int[10][4];
 		String [][][]undoEmployees = new String[10][size][10];
 
@@ -327,44 +325,6 @@ public class Main {
 			}
 
 			switch(command) {
-				case "undo":
-					for(int m = 0; m < 10; m++) {
-						if(undoInts[m][3] != 0){
-							System.out.println("***************");
-							System.out.println("data era " + undoInts[m][0] + "/" + undoInts[m][1] + " emp = " + undoInts[m][2] + " ids = " + undoInts[m][3]);
-							if(undoEmployees[m][0][0] != null){
-								for(int n = 0; n < size; n++) {
-									for(int o = 0; o < 10; o++) {
-										if(undoEmployees[m][n][o] != null)
-											System.out.print(undoEmployees[m][n][o] + " ");
-									}
-									if(undoEmployees[m][n][0] != null)
-										System.out.print("\n");
-								}
-							}
-							System.out.println("***************");
-						}
-					}
-					break;
-				case "redo":
-					for(int m = 0; m < 10; m++) {
-						if(redoInts[m][3] != 0){
-							System.out.println("***************");
-							System.out.println("data era " + redoInts[m][0] + "/" + redoInts[m][1] + " emp = " + redoInts[m][2] + " ids = " + redoInts[m][3]);
-							if(redoEmployees[m][0][0] != null){
-								for(int n = 0; n < size; n++) {
-									for(int o = 0; o < 10; o++) {
-										if(redoEmployees[m][n][o] != null)
-											System.out.print(redoEmployees[m][n][o] + " ");
-									}
-									if(redoEmployees[m][n][0] != null)
-										System.out.print("\n");
-								}
-							}
-							System.out.println("***************");
-						}
-					}
-					break;
 				case "date": 
 					System.out.println("A data de hoje é " + currentDay + "/" + currentMonth);
 					break;
