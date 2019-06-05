@@ -2,7 +2,7 @@ package main;
 import java.util.Scanner;
 
 public class Main {
-	
+	static final int size = 100;
 	public static boolean buildCalendar(int [][]calendar, String firstDay) {
 		int day = 0;
 		switch(firstDay) {
@@ -102,7 +102,7 @@ public class Main {
 		}
 	}
 
-	public static int findUnion(int size, String rmId, String [][]employees) {
+	public static int findUnion(String rmId, String [][]employees) {
 		for(int i = 0; i < size; i++)
 			if(employees[i][0] != null && employees[i][9].split(" ")[1].equals(rmId))
 				return i;
@@ -110,7 +110,7 @@ public class Main {
 		return -1;//employee not found
 	}
 		
-	public static int findIndex(int size, String rmId, String [][]employees) {
+	public static int findIndex(String rmId, String [][]employees) {
 		for(int i = 0; i < size; i++)
 			if(employees[i][0] != null && employees[i][4].equals(rmId))
 				return i;
@@ -118,15 +118,15 @@ public class Main {
 		return -1;//employee not found
 	}	
 	
-	public static int findName(int size, String name, String [][]employees) {
+	public static int findName(String name, String [][]employees) {
 		for(int i = 0; i < size; i++)
 			if(employees[i][0] != null && employees[i][0].equals(name)) return i;
 		System.out.println("employee not found");
 		return -1;//employee not found
 	}	
 
-	public static void remove(int size, String rmId, String [][]employees) {
-		int index = findIndex(size, rmId, employees);
+	public static void remove(String rmId, String [][]employees) {
+		int index = findIndex(rmId, employees);
 		if(index == -1)
 			System.out.println("Employee not found");
 		else {
@@ -154,7 +154,7 @@ public class Main {
 		return;
 	}
 
-	public static void printAll(int size, String [][]employees) {
+	public static void printAll(String [][]employees) {
 		for(int i = 0; i < size; i++) {
 			if(employees[i][0] != null) {
 				System.out.println("||||||||||||||");
@@ -175,14 +175,6 @@ public class Main {
 			total += mins;
 		}
 		return total;
-	}
-
-	public static String[][] growMatrix(String [][]employees) {
-		//returns a matrix 50% larger than the previous, with the same content
-		int newSize = (int)(employees.length * 1.5) + 1;
-		String [][]newMatrix = new String[newSize][10];
-		System.arraycopy(employees, 0, newMatrix, 0, employees.length);
-		return newMatrix;
 	}
 
 	public static double relativePay(double ratio, int minutes) {
@@ -227,6 +219,54 @@ public class Main {
 			} else
 				return Double.parseDouble(employee[5]);
 		}
+	}
+
+	public static void cpy(int []from, int []into) {
+		for(int i = 0; i < from.length; i++) into[i] = from[i];
+	}
+
+	public static boolean isIn(String s) {
+		for(int i = 1; i < 10; i++)
+			if(i != 8 && s.equals(Integer.toString(i)))
+				return true;
+		return false;
+	}
+
+	public static void moveILeft(int [][]array) {
+		for(int i = 0; i < 9; i++)
+			for(int j = 0; j < 4; j++)
+				array[i][j] = array[i + 1][j];
+	}
+
+	public static void moveSLeft(String [][][]em) {
+		for(int i = 0; i < 9; i++)
+			for(int j = 0; j < size; j++)
+				for(int k = 0; k < 10; k++)
+					em[i][j][k] = em[i + 1][j][k];
+	}
+
+	public static int diffThanZero(int [][]array) {
+		int i = 0;
+		for(i = 0; i < 10; i++)
+			if(array[i][1] == 0) break;
+		if(i == 9) return i;
+		else return i - 1;
+	}
+
+	public static int equalToZero(int [][]array) {
+		for(int i = 0; i < 10; i++)
+			if(array[i][3] == 0) return i;
+		return -1;
+	}
+
+	public static void clear(int [][]redoInts, String [][][]redoEmployees) {
+		for(int i = 0; i < 10; i++)
+			for(int j = 0; j < 4; j++)
+				redoInts[i][j] = 0;
+		for(int m = 0; m < 10; m++)
+			for(int n = 0; n < size; n++)
+				for(int o = 0; o < 10; o++)
+					redoEmployees[m][n][o] = null;
 	}
 
 	public static void main(String[] args) {
@@ -275,7 +315,7 @@ public class Main {
 						//1: cheque correios, cheque maos, deposito conta
 		//employees[9] = pertence ao sindicato (1 ou 0), identificacao no sindicato, taxa sindical
 		
-		int size = 2, employeeCount = 0, globalId = 1, index;//AUMENTAR SIZE
+		int employeeCount = 0, globalId = 1, index;
 		String [][]employees = new String[size][10];
 		String id;
 		
@@ -284,11 +324,79 @@ public class Main {
 		schedules[1] = "semanal 1 sexta";
 		schedules[2] = "semanal 2 sexta";
 		
+		//int []undoDay = new int[10];
+		//int []undoMonth = new int[10];
+		//int []undoECount = new int[10];
+		//int []undoGID = new int[10];
+		int [][]undoInts = new int[10][4];
+		String [][][]undoEmployees = new String[10][size][10];
+
+		int [][]redoInts = new int[10][4];
+		String [][][]redoEmployees = new String[10][size][10];
+
 		while(true) {
 			System.out.print(":");
 			String command = in.nextLine();
 
+			if(isIn(command)) {
+				int i = 0;
+				if(undoInts[9][3] == 0) i = equalToZero(undoInts);
+				else {
+					moveILeft(undoInts);
+					moveSLeft(undoEmployees);
+					i = 9;
+				}
+				undoInts[i][0] = currentDay;
+				undoInts[i][1] = currentMonth;
+				undoInts[i][2] = employeeCount;
+				undoInts[i][3] = globalId;
+				for(int j = 0; j < size; j++)
+					for(int k = 0; k < 10; k++)
+						undoEmployees[i][j][k] = employees[j][k];
+			}
+
 			switch(command) {
+				case "undo":
+					for(int m = 0; m < 10; m++) {
+						if(undoInts[m][3] != 0){
+							System.out.println("***************");
+							System.out.println("data era " + undoInts[m][0] + "/" + undoInts[m][1] + " emp = " + undoInts[m][2] + " ids = " + undoInts[m][3]);
+							if(undoEmployees[m][0][0] != null){
+								for(int n = 0; n < size; n++) {
+									for(int o = 0; o < 10; o++) {
+										if(undoEmployees[m][n][o] != null)
+											System.out.print(undoEmployees[m][n][o] + " ");
+									}
+									if(undoEmployees[m][n][0] != null)
+										System.out.print("\n");
+								}
+							}
+							System.out.println("***************");
+						}
+					}
+					break;
+				case "redo":
+					for(int m = 0; m < 10; m++) {
+						if(redoInts[m][3] != 0){
+							System.out.println("***************");
+							System.out.println("data era " + redoInts[m][0] + "/" + redoInts[m][1] + " emp = " + redoInts[m][2] + " ids = " + redoInts[m][3]);
+							if(redoEmployees[m][0][0] != null){
+								for(int n = 0; n < size; n++) {
+									for(int o = 0; o < 10; o++) {
+										if(redoEmployees[m][n][o] != null)
+											System.out.print(redoEmployees[m][n][o] + " ");
+									}
+									if(redoEmployees[m][n][0] != null)
+										System.out.print("\n");
+								}
+							}
+							System.out.println("***************");
+						}
+					}
+					break;
+				case "date": 
+					System.out.println("A data de hoje é " + currentDay + "/" + currentMonth);
+					break;
 				case "schedules": 
 					for(int i = 0; i < 20; i++) {
 						if(schedules[i] != null)
@@ -301,7 +409,7 @@ public class Main {
 					System.out.print(usage);
 					break;
 				case "p"://mudar para p dps de terminar
-					printAll(size, employees);
+					printAll(employees);
 					break;
 				case "1":
 					String []attributes = new String[10];
@@ -315,20 +423,18 @@ public class Main {
 					switch(attributes[2]) {
 						case "salaried":
 							System.out.print("\tSalario mensal: ");
-							attributes[3] = in.nextLine();
 							attributes[6] = schedules[0];//agenda de mensal $
 							break;
 						case "commissioned":
 							System.out.print("\tSalario e % de comissao: ");
-							attributes[3] = in.nextLine();
 							attributes[6] = schedules[2];//agenda de semanal 2 sexta
 							break;
 						case "hourly":
 							System.out.print("\tSalario por hora: ");
-							attributes[3] = in.nextLine();
 							attributes[6] = schedules[1];//agenda de semanal 1 sexta
 							break;
 					}
+					attributes[3] = in.nextLine();
 					attributes[4] = Integer.toString(globalId);
 					
 					System.out.print("\tMetodo de pagamento: ");
@@ -336,23 +442,20 @@ public class Main {
 					System.out.print("\tInformacoes sindicais: ");
 					attributes[9] = in.nextLine();
 					
-					if(employeeCount == size) {
-						employees = growMatrix(employees);
-						size = employees.length;
-					}
-					
 					initialPay(attributes);
 					nextPayment(attributes, calendar, currentDay, currentMonth);
 					add(attributes, employeeCount, employees);
 					employeeCount++;
 					globalId++;
+					clear(redoInts, redoEmployees);
 					break;
 				case "2":
 					System.out.print("Forneca o id do funcionario que deseja remover\n"
 									+"\t:");
 					id = in.nextLine();
-					remove(size, id, employees);
+					remove(id, employees);
 					employeeCount--;
+					clear(redoInts, redoEmployees);
 					break;
 				case "3":
 					System.out.println("Forneca as seguintes informacoes");
@@ -365,7 +468,7 @@ public class Main {
 					int exitH = in.nextInt();
 					int exitM = in.nextInt();
 					int worked = timeToMinutes(arrivalH, arrivalM, exitH, exitM);
-					index = findIndex(size, id, employees);
+					index = findIndex(id, employees);
 					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) + 
 									relativePay(Double.parseDouble(employees[index][3]), worked));
 					id = in.nextLine();
@@ -376,11 +479,11 @@ public class Main {
 					id = in.nextLine();
 					System.out.print("\tPreco da venda: ");
 					double price = in.nextDouble();
-					index = findIndex(size, id, employees);
+					index = findIndex(id, employees);
 					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) + 
 									commissionPayment(Double.parseDouble(
 									employees[index][3].split(" ")[1]), price));
-
+					clear(redoInts, redoEmployees);
 					id = in.nextLine();
 					break;
 				case "5": 
@@ -389,14 +492,15 @@ public class Main {
 					id = in.nextLine();
 					System.out.print("\tTaxa de servico: ");
 					double fee = in.nextDouble();
-					index = findUnion(size, id, employees);
+					index = findUnion(id, employees);
 					employees[index][5] = Double.toString(Double.parseDouble(employees[index][5]) - fee);
+					clear(redoInts, redoEmployees);
 					id = in.nextLine();
 					break;
 				case "6":
 					System.out.print("Forneça o ID do funcionário:");
 					id = in.nextLine();
-					index = findIndex(size, id, employees);
+					index = findIndex(id, employees);
 					System.out.println("Deseja mudar:");
 					System.out.print("\tSeu nome ?(y/n):");
 					String answer = in.nextLine();
@@ -449,6 +553,7 @@ public class Main {
 						String union = in.nextLine();
 						employees[index][9] = union;
 					}
+					clear(redoInts, redoEmployees);
 					break;
 				case "7":
 					System.out.println("Rodando a folha de pagamento para o dia " + currentDay + "/" + currentMonth);
@@ -466,7 +571,6 @@ public class Main {
 					}
 					for(int i = 0; i < employeeCount; i++) {
 						date = employees[i][7];
-						System.out.println("date is " + date);//para debugar
 						if(Integer.parseInt(date.split("/")[0]) == currentDay
 						&& Integer.parseInt(date.split("/")[1]) == currentMonth) {
 							System.out.println("\t//////////////////////");
@@ -484,15 +588,96 @@ public class Main {
 							nextPayment(employees[i], calendar, nextDay, nextMonth);
 							System.out.println("\tEmpregado pago.");
 							System.out.println("\t//////////////////////");
-							//salariado mensal recebe normal, semanal divide pela qtd de semanas
-							//comissionado mensal recebe normal, semanal divide o salario pelas semanas e da a comissao total
-							//horista recebe todo de qualquer forma
 						}
 					}
 					System.out.println("Todos os empregados foram pagos.");
 					System.out.println("O dia de hoje agora é " + nextDay + "/" + nextMonth);
 					currentDay = nextDay;
 					currentMonth = nextMonth;
+					clear(redoInts, redoEmployees);
+					break;
+				case "8":
+					System.out.print("Deseja fazer:\n" + "\t[1]-undo\n" + "\t[2]-redo\n:");
+					String auxString = in.nextLine();
+					if(auxString.equals("1")){
+						int undoIndex = 0;
+						if(undoInts[9][1] != 0) undoIndex = 9;
+						else undoIndex = diffThanZero(undoInts);
+						if(undoIndex == -1) {
+							System.out.println("Nao foi possivel completar a acao.");
+							break;
+						}
+						int redoIndex;
+						if(redoInts[9][1] == 0) redoIndex = equalToZero(redoInts);
+						else {
+							moveILeft(redoInts);
+							moveSLeft(redoEmployees);
+							redoIndex = 9;
+						}
+
+						redoInts[redoIndex][0] = currentDay;
+						redoInts[redoIndex][1] = currentMonth;
+						redoInts[redoIndex][2] = employeeCount;
+						redoInts[redoIndex][3] = globalId;
+						for(int j = 0; j < size; j++)
+							for(int k = 0; k < 10; k++)
+								redoEmployees[redoIndex][j][k] = employees[j][k];
+
+						currentDay = undoInts[undoIndex][0];
+						currentMonth = undoInts[undoIndex][1];
+						employeeCount = undoInts[undoIndex][2];
+						globalId = undoInts[undoIndex][3];
+
+						undoInts[undoIndex][0] = 0;
+						undoInts[undoIndex][1] = 0;
+						undoInts[undoIndex][2] = 0;
+						undoInts[undoIndex][3] = 0;
+						for(int j = 0; j < size; j++)
+							for(int k = 0; k < 10; k++){
+								employees[j][k] = undoEmployees[undoIndex][j][k];
+								undoEmployees[undoIndex][j][k] = null;
+							}
+						System.out.println("Undo realizado!");
+					} else {
+						int redoIndex = 0;
+						if(redoInts[9][1] != 0) redoIndex = 9;
+						else redoIndex = diffThanZero(redoInts);
+						if(redoIndex == -1) {
+							System.out.println("Nao foi possivel completar a acao.");
+							break;
+						}
+						int undoIndex;
+						if(undoInts[9][1] == 0) undoIndex = equalToZero(undoInts);
+						else {
+							moveILeft(undoInts);
+							moveSLeft(undoEmployees);
+							undoIndex = 9;
+						}
+
+						undoInts[undoIndex][0] = currentDay;
+						undoInts[undoIndex][1] = currentMonth;
+						undoInts[undoIndex][2] = employeeCount;
+						undoInts[undoIndex][3] = globalId;
+						for(int j = 0; j < size; j++)
+							for(int k = 0; k < 10; k++)
+								undoEmployees[undoIndex][j][k] = employees[j][k];
+
+						currentDay = redoInts[redoIndex][0];
+						currentMonth = redoInts[redoIndex][1];
+						employeeCount = redoInts[redoIndex][2];
+						globalId = redoInts[redoIndex][3];
+
+						redoInts[redoIndex][0] = 0;
+						redoInts[redoIndex][1] = 0;
+						redoInts[redoIndex][2] = 0;
+						redoInts[redoIndex][3] = 0;
+						for(int j = 0; j < size; j++)
+							for(int k = 0; k < 10; k++){
+								employees[j][k] = redoEmployees[redoIndex][j][k];
+								redoEmployees[redoIndex][j][k] = null;
+							}
+						System.out.println("Redo realizado!");
+					}
 					break;
 				case "9":
 					System.out.print("Forneca o ID do empregado: ");
@@ -504,9 +689,10 @@ public class Main {
 					}
 					System.out.print("Nova agenda de pagamento desse empregado: ");
 					String sch = in.nextLine();
-					index = findIndex(size, id, employees);
+					index = findIndex(id, employees);
 					employees[index][6] = schedules[Integer.parseInt(sch) - 1];
 					nextPayment(employees[index], calendar, currentDay, currentMonth);
+					clear(redoInts, redoEmployees);
 					break;
 				case "10":
 					if(schedules[19] != null){
